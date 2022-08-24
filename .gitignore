@@ -130,3 +130,6 @@ dmypy.json
 
 # ignore file containing client info
 clientInfo.py
+
+# ignore folder containing wallpapers
+wallpapers
