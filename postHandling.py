@@ -1,6 +1,10 @@
 import json
 import requests
 import os
+import shutil
+import clientInfo as ci
+
+from main import getUserInput
 
 
 def getResolution(datPost):
@@ -83,3 +87,8 @@ def downloadPicture(url: str, filepath: str):
     with open(filepath, "wb") as f:
         f.write(picture.content)
 
+def saveWallpaper():
+    name = input("Enter wallpaper name: ")
+    # This is the filepath for where all wallpapers are stored (in Ubuntu) this has to be changed for anybody using a different os
+    mainWallpaperFilePath = ci.savedWallpaperFilePath + str(name)
+    shutil.copy(ci.wallpaperFilepath, mainWallpaperFilePath)
