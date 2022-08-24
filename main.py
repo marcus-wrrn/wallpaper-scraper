@@ -1,7 +1,7 @@
 import requests
 # Import required info for access to the reddit api
 import clientInfo as botInfo
-import postAnalysis as panl
+import postHandling as phan
 
 def getAPIData():
     # url for reddit
@@ -25,13 +25,18 @@ def connectToReddit(base_url, headers):
     response = requests.get(base_url + '/api/v1/me', headers=headers)
     return response.status_code == 200
 
+def getUserInput(message: str):
+    userChoice = input(message + " y/n: ")
+    if(userChoice == 'y' or userChoice == 'Y'):
+        return True
+    return False
+
 def changeWallpaper(wallpaperFilepath, posts, postCount):
     for i in range(postCount):
         if(posts["image"][i] and not posts["NSFW"][i]):
-            panl.downloadPicture(posts["url"][i], wallpaperFilepath)
-            # if getUserInput():
-            #     break
-            break
+            phan.downloadPicture(posts["url"][i], wallpaperFilepath)
+            if getUserInput("Keep Wallpaper"):
+                break
 
 
 def main():
@@ -50,7 +55,7 @@ def main():
     numOfPosts = 25
     # parameters for what sort of information the script will be requesting
     payload = {'limit': numOfPosts}
-    posts, postNum = panl.getPostsFromReddit(subreddit, payload, headers, base_url)
+    posts, postNum = phan.getPostsFromReddit(subreddit, payload, headers, base_url)
     changeWallpaper("./wallpapers/wallpaper", posts, postNum)
     
 

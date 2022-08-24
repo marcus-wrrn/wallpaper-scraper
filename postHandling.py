@@ -82,3 +82,4 @@ def downloadPicture(url: str, filepath: str):
             os.remove(filepath)
     with open(filepath, "wb") as f:
         f.write(picture.content)
+
