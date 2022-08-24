@@ -4,14 +4,12 @@ import os
 import shutil
 import clientInfo as ci
 
-from main import getUserInput
-
-
+# Helper function to get the height and width of a wallpaper
 def getResolution(datPost):
     resolution = datPost["preview"]["images"][0]["source"]
     return resolution["width"], resolution["height"]
 
-# assign all post
+# assign all post data to the
 def assignPostData(post: json, postInfo: dict):
     # get the url to the image/gif
     postInfo["url"].append(post["url_overridden_by_dest"])
@@ -74,16 +72,20 @@ def checkPostLength(postData: dict, numOfPosts: int):
         correctLen = False
     return correctLen
 
+# takes json post data from a subreddit and returns a dictionary containing a list of post info
 def getPostsFromReddit(subreddit, payload, headers, base_url):
     response = requests.get(base_url + subreddit, params=payload, headers=headers).json()
     return getPostData(response["data"]["children"])
 
-
+# downloads an image from the internet writes it to the filepath specified
+# NOTE: Will overwrite anything on the filepath, use with caution
 def downloadPicture(url: str, filepath: str):
+    # Get picture from the internet
     picture = requests.get(url)
     # If a file already exists on the path delete the picture
     if(os.path.exists(filepath)):
             os.remove(filepath)
+    # Write the image to the path
     with open(filepath, "wb") as f:
         f.write(picture.content)
 
