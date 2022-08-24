@@ -1,7 +1,23 @@
+from ast import arg
+import sys
 import requests
 # Import required info for access to the reddit api
 import clientInfo as ci
 import postHandling as phan
+
+roulleteMode = False
+
+def getUserArgs():
+    subreddit = "/r/wallpaper"
+    postCount = 25
+    # Check command line
+    argCount = len(sys.argv)
+    if argCount >= 2:
+        subreddit = "/r/" + sys.argv[1]
+    return subreddit
+
+
+
 
 def getAPIData():
     # url for reddit
@@ -25,11 +41,16 @@ def connectToReddit(base_url, headers):
     response = requests.get(base_url + '/api/v1/me', headers=headers)
     return response.status_code == 200
 
-
+def validatePost(posts, i):
+    if (roulleteMode and posts["image"][i]):
+        return True
+    if (not roulleteMode and posts["image"][i] and not posts["NSFW"][i]):
+        return True
+    return False
 
 def changeWallpaper(wallpaperFilepath, posts, postCount):
     for i in range(postCount):
-        if(posts["image"][i] and not posts["NSFW"][i]):
+        if(validatePost(posts, i)):
             phan.downloadPicture(posts["url"][i], wallpaperFilepath)
             if phan.getUserInput("Keep Wallpaper"):
                 if phan.getUserInput("Would you like to save the wallpaper permanently"):
@@ -43,6 +64,7 @@ def getUserInput(message: str):
     return False
 
 def main():
+    
     # base url used for the reddit api
     base_url ='https://oauth.reddit.com'
     # headers needed to request data from api
@@ -52,12 +74,9 @@ def main():
         print("Unable to Connect to reddit")
         return
     # subreddit that the wallpapers originate
-    subreddit = '/r/Art'
-    # number of posts to be taken from the subreddit
-    # the highest possible value is 200
-    numOfPosts = 25
+    subreddit = getUserArgs()
     # parameters for what sort of information the script will be requesting
-    payload = {'limit': numOfPosts}
+    payload = {'limit': 200}
     posts, postNum = phan.getPostsFromReddit(subreddit, payload, headers, base_url)
     changeWallpaper(ci.wallpaperFilepath, posts, postNum)
     

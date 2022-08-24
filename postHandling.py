@@ -75,7 +75,7 @@ def checkPostLength(postData: dict, numOfPosts: int):
     return correctLen
 
 def getPostsFromReddit(subreddit, payload, headers, base_url):
-    response = requests.get(base_url + subreddit, headers=headers, params=payload).json()
+    response = requests.get(base_url + subreddit, params=payload, headers=headers).json()
     return getPostData(response["data"]["children"])
 
 
