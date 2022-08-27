@@ -5,9 +5,10 @@ import requests
 import clientInfo as ci
 import postHandling as phan
 
+# Global variable for whether to turn on roulleteMode or not
 roulleteMode = False
 
-def getAPIData():
+def getAPIHeaderData():
     # url for reddit
     reddit_url = 'https://www.reddit.com/'
     # Required data to access API
@@ -24,8 +25,10 @@ def getAPIData():
     return {'Authorization': token, 'User-Agent': ci.user_agent}
 
 def connectToReddit(base_url, headers):
-    response = requests.get(base_url + '/api/v1/me', headers=headers)
-    return response.status_code == 200
+    try:
+        requests.get(base_url + '/api/v1/me', headers=headers)
+    except:
+        print("unable to connect to the reddit servers")
 
 # Gets the command line arguments of the user
 # For now only allows user to specify subreddit, defaults to r/wallpaper
@@ -52,9 +55,9 @@ def changeWallpaper(wallpaperFilepath, posts, postCount):
         if(validatePost(posts, i)):
             phan.downloadPicture(posts["url"][i], wallpaperFilepath)
             # Ask the user if they'd like to keep the wallpaper or pick a different one
-            if phan.getUserInput("Keep Wallpaper"):
+            if getUserInput("Keep Wallpaper"):
                 # If the user wants to keep the wallpaper ask if they'd like to save it permanently
-                if phan.getUserInput("Would you like to save the wallpaper permanently"):
+                if getUserInput("Would you like to save the wallpaper permanently"):
                     # Save the wallpaper using the filepath specified in clientInfo.py
                     phan.saveWallpaper()
                 # close the loop as a wallpaper has been chosen
@@ -71,11 +74,9 @@ def main():
     # base url used for the reddit api
     base_url ='https://oauth.reddit.com'
     # headers needed to request data from api
-    headers = getAPIData()
+    headers = getAPIHeaderData()
     # Connect to reddit api, if not throw an error
-    if not connectToReddit(base_url, headers):
-        print("Unable to Connect to reddit")
-        return
+    connectToReddit(base_url, headers)
     # subreddit that the wallpapers originate
     subreddit = getUserArgs()
     # parameters for what sort of information the script will be requesting
