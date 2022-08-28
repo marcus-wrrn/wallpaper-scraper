@@ -4,6 +4,9 @@ import requests
 # Import required info for access to the reddit api + filepath info specific to the users computer
 import clientInfo as ci
 import postHandling as phan
+from os import listdir
+import inquirer
+
 
 # Global variable for whether to turn on roulleteMode or not
 roulleteMode = False
@@ -39,6 +42,7 @@ def getUserArgs():
         subreddit = "/r/" + sys.argv[1]
     return subreddit
 
+
 # Returns true if the post is an image and not tagged NSFW, if roullete mode is turned on NSFW tags are ignored
 def validatePost(posts, i):
     if (roulleteMode and posts["image"][i]):
@@ -63,20 +67,26 @@ def changeWallpaper(wallpaperFilepath, posts, postCount):
                 # close the loop as a wallpaper has been chosen
                 break
 
-# Returns true if the user presses Y or y for an input prompt, False otherwise
-def getUserInput(message: str):
-    userChoice = input(message + " y/n: ")
-    if(userChoice == 'y' or userChoice == 'Y'):
-        return True
-    return False
 
-def main():
+# Getting saved wallpaper from file
+def changeWallpaperSaved(savedWallpaperFilePath=ci.savedWallpaperFilePath):
+    files = listdir(savedWallpaperFilePath)
+    # Let the user choose which filepaper to use
+    wallChoice = [inquirer.List("Wallpaper", message="Select Wallpaper to use", choices=files)]
+    wallpaper = inquirer.prompt(wallChoice)["Wallpaper"]
+    phan.moveWallpaper(savedWallpaperFilePath + wallpaper, ci.wallpaperFilepath)
+
+
+def changeWallpaperFromReddit():
     # base url used for the reddit api
     base_url ='https://oauth.reddit.com'
     # headers needed to request data from api
+    print("Getting Header Data...")
     headers = getAPIHeaderData()
+    print("Connecting to Reddit...")
     # Connect to reddit api, if not throw an error
     connectToReddit(base_url, headers)
+    print("Connected...")
     # subreddit that the wallpapers originate
     subreddit = getUserArgs()
     # parameters for what sort of information the script will be requesting
@@ -87,7 +97,30 @@ def main():
     posts, postNum = phan.getPostsFromReddit(subreddit, payload, headers, base_url)
     # Changes the wallpaper of the user
     changeWallpaper(ci.wallpaperFilepath, posts, postNum)
-    
+
+
+# Returns true if the user presses Y or y for an input prompt, False otherwise
+def getUserInput(message: str):
+    userChoice = input(message + " y/n: ")
+    if(userChoice == 'y' or userChoice == 'Y'):
+        return True
+    return False
+
+def makeWallpaperSelection():
+    modeChoice = [inquirer.List("Mode", message="How would you like to change your wallpaper?", choices=["From saved wallpapers", "Get new wallpaper from Reddit"])]
+    choice = inquirer.prompt(modeChoice)["Mode"]
+    return choice == "From saved wallpapers"
+
+
+def main():
+    # Choose whether or not to get wallpaper from your saved wallpaper folder or from reddit
+    # If any extra parameters are used assume that the user wants to get wallpaper from reddit
+    # i.e if the user specified a subreddit to use assume that they want to get their wallpaper from that subreddit
+    getSavedWallpaper = False if len(sys.argv) >= 2 else makeWallpaperSelection()
+    if getSavedWallpaper:
+        changeWallpaperSaved()
+    else:
+        changeWallpaperFromReddit()
 
 if __name__ == "__main__":
     main()
