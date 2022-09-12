@@ -1,4 +1,3 @@
-from ast import arg
 import sys
 import requests
 # Import required info for access to the reddit api + filepath info specific to the users computer
@@ -6,6 +5,7 @@ import clientInfo as ci
 import postHandling as phan
 from os import listdir
 import inquirer
+import subprocess
 
 
 # Global variable for whether to turn on roulleteMode or not
@@ -51,13 +51,27 @@ def validatePost(posts, i):
         return True
     return False
 
-# Changes the wallpaper on your computer
-def changeWallpaper(wallpaperFilepath, posts, postCount):
-    # Loops through all stored posts
+# Downloads the first valid post and returns its index value
+def downloadFirstPost(posts, postCount, filePath):
     for i in range(postCount):
+        if(validatePost(posts, i)):
+            phan.downloadPicture(posts["url"][i], filePath)
+            return i
+    return postCount
+
+def selectWallpapaer(firstPostIndex, posts, postCount, filePath1, filePath2,):
+    alternate = False
+    # Loops through all stored posts
+    for i in range(firstPostIndex + 1, postCount):
         # If the post has a picture and is not NSFW (roullete mode ignores NSFW tags) download the picture
         if(validatePost(posts, i)):
-            phan.downloadPicture(posts["url"][i], wallpaperFilepath)
+            if not alternate:
+                phan.downloadPicture(posts["url"][i], filePath2)
+                subprocess.run(["./change_wallpaper_path.sh", filePath1])
+            else:
+                phan.downloadPicture(posts["url"][i], filePath1)
+                subprocess.check_call(["./change_wallpaper_path.sh", filePath2])
+            
             # Ask the user if they'd like to keep the wallpaper or pick a different one
             if getUserInput("Keep Wallpaper"):
                 # If the user wants to keep the wallpaper ask if they'd like to save it permanently
@@ -66,6 +80,15 @@ def changeWallpaper(wallpaperFilepath, posts, postCount):
                     phan.saveWallpaper()
                 # close the loop as a wallpaper has been chosen
                 break
+            alternate = True if not alternate else False
+
+# Changes the wallpaper on your computer
+def changeWallpaper(wallpaperFilepath, posts, postCount):
+    filePathTemp1 = "/home/marcus/Projects/InternetAnalysis/wallpaper-scraper/wallpaper-scraper/wallpapers/wallpaper1"
+    filePathTemp2 = "/home/marcus/Projects/InternetAnalysis/wallpaper-scraper/wallpaper-scraper/wallpapers/wallpaper2"
+    firstPictureNum = downloadFirstPost(posts, postCount, filePathTemp1)
+
+    
 
 
 # Getting saved wallpaper from file
