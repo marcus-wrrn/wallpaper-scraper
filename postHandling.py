@@ -74,7 +74,9 @@ def checkPostLength(postData: dict, numOfPosts: int):
 
 # takes json post data from a subreddit and returns a dictionary containing a list of post info
 def getPostsFromReddit(subreddit, payload, headers, base_url):
+    print("Retrieving Posts from subreddit: " + subreddit)
     response = requests.get(base_url + subreddit, params=payload, headers=headers).json()
+    print("Posts retrieved...")
     return getPostData(response["data"]["children"])
 
 # downloads an image from the internet writes it to the filepath specified
@@ -84,7 +86,7 @@ def downloadPicture(url: str, filepath: str):
     picture = requests.get(url)
     # If a file already exists on the path delete the picture
     if(os.path.exists(filepath)):
-            os.remove(filepath)
+        os.remove(filepath)
     # Write the image to the path
     with open(filepath, "wb") as f:
         f.write(picture.content)
@@ -94,3 +96,8 @@ def saveWallpaper():
     # This is the filepath for where all wallpapers are stored (in Ubuntu) this has to be changed for anybody using a different os
     mainWallpaperFilePath = ci.savedWallpaperFilePath + str(name)
     shutil.copy(ci.wallpaperFilepath, mainWallpaperFilePath)
+
+def moveWallpaper(oldFilePath, newFilePath):
+    if(os.path.exists(newFilePath)):
+        os.remove(newFilePath)
+    shutil.copy(oldFilePath, newFilePath)
