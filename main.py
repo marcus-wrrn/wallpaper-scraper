@@ -1,5 +1,4 @@
 import sys
-import time
 import requests
 # Import required info for access to the reddit api + filepath info specific to the users computer
 import clientInfo as ci
@@ -78,6 +77,11 @@ def newWallpaperSetup(filePath1, filePath2, alternate):
         phan.saveWallpaper()
     # close the loop as a wallpaper has been chosen
 
+def cancelWallpaper(tempPath1, tempPath2):
+    changeWallpaperPath(ci.wallpaperFilepath)
+    os.remove(tempPath1)
+    os.remove(tempPath2)
+
 def selectWallpaper(firstPostIndex, posts, postCount, filePath1, filePath2,):
     alternate = False
     # Loops through all stored posts
@@ -94,10 +98,14 @@ def selectWallpaper(firstPostIndex, posts, postCount, filePath1, filePath2,):
                 changeWallpaperPath(filePath2)
             
             # Ask the user if they'd like to keep the wallpaper or pick a different one
-            if getUserInput("Keep Wallpaper"):
+            userChoice = input("Keep Wallpaper y/n (c for cancel): ")
+            if userChoice == 'y' or userChoice == 'Y':
                 newWallpaperSetup(filePath1, filePath2, alternate)
                 break
-            alternate = True if not alternate else False
+            elif userChoice == 'c' or userChoice == 'C':
+                cancelWallpaper(filePath1, filePath2)
+                break
+            alternate = not alternate
 
 # Changes the wallpaper on your computer
 def changeWallpaper(posts, postCount):
